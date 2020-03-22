@@ -5,55 +5,24 @@ using System.Reflection;
 
 public class DeathRaceBehaviour : MonoBehaviour
 {
-    // Vector3 random_vel(float a,float b){
-    //     return new Vector3(Random.Range(a,b),
-    //         Random.Range(a,b),0);
-    // }
-
-
-    public GameObject Block;
+    public GameObject AgentPrefab;
+    public GameObject FinishLine;
     public bool IAmHost;
-    float var1;
 
-    //List<GameObject> npcs = new List<GameObject>();
-    //List<Rigidbody> rb_npcs = new List<Rigidbody>();
-    List<GameObject> agents = new List<GameObject>();
-    List<GameObject> npcs = new List<GameObject>();
-
-
-    List<GameObject> players = new List<GameObject>();
-    enum AgentState
-    {
-        Stationary,
-        Walking,
-        Running
-    }
-
-    //var agentStates = new List<AgentState>();
-    Dictionary<int,AgentState> agentStates = new Dictionary<int,AgentState>();
-
-    //List<physics> npcs = new List<GameObject>();
+    List<Agent> agents = new List<Agent>();
 
     int N_agent = 10;
     int N_player = 2;
     
     
-
     // Start is called before the first frame update
-    
     GameObject makeFinishLine(){
-        var finishLine = Instantiate(Block, new Vector3(+Global.X/2,
+        var finishLine = Instantiate(FinishLine, new Vector3(+Global.X/2,
                                               -Global.Y/2*0f ,0), 
                                               Quaternion.identity);
-        finishLine.AddComponent<Rigidbody>();                
-        finishLine.GetComponent<Collider>().enabled = false;
-        finishLine.GetComponent<Rigidbody>().useGravity = false;
         finishLine.transform.localScale = new Vector3 (1,Global.Y, 1);
         return finishLine;
     }
-
-    float[,] T = new float[2, 2];
-    //int p1 = Random.Range(0,N_npc);
 
     void Start() {
         if(IAmHost) {
@@ -64,14 +33,11 @@ public class DeathRaceBehaviour : MonoBehaviour
         }
     }
 
-    void hostStart()
-    {
-
-        //print("AgentState.Stationary: " + (int) AgentState.Stationary);
+    void hostStart() {
         var finishLine = makeFinishLine();
 
         List<int> playersI = new List<int>();
-        for (int n=0; n<N_player; n++){
+        for (int n=0; n<N_player; n++) {
             var i = Random.Range(0,N_agent);
             while (playersI.Contains(i)) {
                 i = Random.Range(0,N_agent);
@@ -79,189 +45,35 @@ public class DeathRaceBehaviour : MonoBehaviour
             playersI.Add(i);
         }
          
-        // print("players "+string.Join(", ",playersI));
-
-        for (int n=0; n<N_agent; n++)
-            {
-                //Random.Range(-10.0f, 10.0f);
-                /*npcs.Add(Instantiate(Block2, new Vector3(Random.Range(-Global.X/2,Global.X/2),
-                                              Random.Range(-Global.Y/2,Global.Y/2),0), 
-                                              Quaternion.identity)
-                */
-
-                
-                
-                var agent = Instantiate(Block, new Vector3(-Global.X/2,
-                                              -Global.Y/2 + n*Global.Y/N_agent   ,0), 
-                                              Quaternion.identity);
-
-                agent.AddComponent<Rigidbody>();
-                
-                agent.GetComponent<Collider>().enabled = false;
-                agent.GetComponent<Rigidbody>().useGravity = false;
-
-                agent.transform.localScale = new Vector3 (1, 1, 1)*0.5f;
-                agentStates.Add(agent.GetInstanceID(),AgentState.Stationary);
-                
-                if (playersI.Contains(n) ){
-                    players.Add(agent);
-                }
-                else{
-                    npcs.Add(agent);
-                }
-                agents.Add(agent);
-
-
-
-            }
-
-        T[(int)AgentState.Stationary, (int)AgentState.Stationary] = 0.97f;
-        T[(int)AgentState.Stationary, (int)AgentState.Walking] = 1f - T[(int)AgentState.Stationary, (int)AgentState.Stationary];
-        T[(int)AgentState.Walking, (int)AgentState.Stationary] = 0.02f;
-        T[(int)AgentState.Walking, (int)AgentState.Walking] = 1f - T[(int)AgentState.Walking, (int)AgentState.Stationary];
-
-
-        
-
-        // for (int n=0; n<N_npc; n++){
-
-        //     //print(String.Format("{0:0.00}",npcs[n] ));
-        //     print("pos "+string.Join(", ", agents[n].transform.position));
-        //     //npcs[n].GetComponent<Rigidbody>().velocity = random_vel(-0.1f,0.1f);
-            
-        //     //print("vel "+string.Join(", ", npcs[n].GetComponent<Rigidbody>().velocity)); 
-        // }
-        //print(Util.describe(typeof(npcs[0]) ) );
-    }
-
-
-    enum Action {
-        Walk,
-        Run
-    }
-//  float _yRotation = Input.GetAxisRaw("Mouse X");
-//         float _xRotation = Input.GetAxisRaw("Mouse Y");
-//         Vector3 _rotation = new Vector3(0f, _yR
-
-    Action? getAction() {
-        var deadZone = 0.3f;
-        if (Input.GetAxisRaw("Horizontal") > deadZone) {
-            // print("Walking Action");
-            return Action.Walk;
+        for (int n=0; n<N_agent; n++) {
+            var agentObj = Instantiate(AgentPrefab, new Vector3(-Global.X/2,
+                                            -Global.Y/2 + n*Global.Y/N_agent,0),
+                                            Quaternion.identity);
+            var agent = agentObj.GetComponent<Agent>();
+            agent.isNpc = playersI.Contains(n) ? false : true;
+            agent.Id = n;
+            agents.Add(agent);
         }
-        // else if(Input.GetKeyDown(KeyCode.Joystick1Button3)) {
-        //     // print("Running Action");
-        //     return Action.Run; 
-        // }
-        else if(Input.GetButton("Fire1")) {
-            // print("Running Action");
-            return Action.Run; 
-        }
-        // else if(Input.GetButtonDown("Y")) {
-        //     // print("Running Action");
-        //     return Action.Run; 
-        // }
-        // else if(Input.GetButton("Y")) {
-        //     // print("Running Action");
-        //     return Action.Run; 
-        // }
-        // else if(Input.GetKeyDown(KeyCode.Joystick1Button3)) {
-        //     // print("Running Action");
-        //     return Action.Run; 
-        // }
-        // else if(Input.GetKeyDown(KeyCode.JoystickButton3)) {
-        //     // print("Running Action");
-        //     return Action.Run; 
-        // }
-        // else if(Mathf.Abs(Input.GetAxis("joystick 1 button 3")) > deadZone) {
-        //     // print("Running Action");
-        //     return Action.Run; 
-        // }
-        return null;
     }
-    
-    // Update is called once per frame
+
+    List<Agent> finishedRace = new List<Agent>();
     int currentPlace = 1;
-    List<int> finishedRace = new List<int>();
-    Vector3 walkingVelocity = new Vector3(1f,0f,0f);
-    Vector3 runningVelocity = new Vector3(1.8f,0f,0f);
-    // Update is called once per frame
-    void Update()
-    {
-        var action = getAction();
-        processAction(players[0], action);
-        foreach  (GameObject agent in npcs) {
-            var nextState = decideNextState(agent);
-            agentStates[agent.GetInstanceID()] = nextState;
-            agent.GetComponent<Rigidbody>().velocity = nextState == AgentState.Stationary ? Vector3.zero : walkingVelocity;
-        }
-
-        for (int n=0; n<N_agent; n++){
-            var agent = agents[n];
-            var id = agent.GetInstanceID();
-            int winnerCount = 0;
-            if ( agent.transform.position[0] >= Global.X/2 && !finishedRace.Contains(id) ){
-                print("Position: "+currentPlace.ToString()+" "+id.ToString()+" "+n.ToString() );
-                finishedRace.Add(agent.GetInstanceID());
-                winnerCount = winnerCount + 1;
-            }
-            if (winnerCount > 0) {
+    int winnerCount = 0;
+    void Update() {
+        foreach  (Agent agent in agents) {
+            var action = agent.getAction();
+            agent.performAction(action);
+            if (finished(agent)) {
+                print("Position: "+currentPlace.ToString()+" "+agent.Id.ToString());
+                finishedRace.Add(agent); 
                 currentPlace += 1;
             }
-        }
-
-    }
-
-    void processAction(GameObject player, Action? action) {
-        // print("processing action: " + action.ToString());
-        var state = agentStates[player.GetInstanceID()];
-
-        if (action == null) {
-            agentStates[player.GetInstanceID()] = AgentState.Stationary;
-            if(state != AgentState.Stationary) {
-                player.GetComponent<Rigidbody>().velocity = Vector3.zero;
-            }
-        }
-        else if (action == Action.Walk) {
-            agentStates[player.GetInstanceID()] = AgentState.Walking;
-            if(state != AgentState.Walking) {
-                player.GetComponent<Rigidbody>().velocity = walkingVelocity;
-            }
-        }
-        else if (action == Action.Run) {
-            agentStates[player.GetInstanceID()] = AgentState.Running;
-            if(state != AgentState.Running) {
-                player.GetComponent<Rigidbody>().velocity = runningVelocity;
-            }
+            // agent.GetComponent<Rigidbody>().velocity = nextState == Agent.State.Stationary ? Vector3.zero : walkingVelocity;
         }
     }
 
-
-    AgentState decideNextState(GameObject agent) {
-        float v = Random.Range(0f,1f);
-        //print("Random Number: " + v.ToString());
-        var prevState = agentStates[agent.GetInstanceID()];
-        if (v < T[(int) prevState, (int)AgentState.Stationary]) {
-            //print("Going STATIONARY BABAAYYYY");
-            return AgentState.Stationary;
-        }
-        else {
-            //print("MOVING");
-            return AgentState.Walking;
-        }
-
-        // if (state == AgentState.Stationary) {
-        //     if (v < T[state][]) {
-        //         agentStates[agent.GetInstanceID()] = AgentState.Moving;
-        //         return walkingVelocity;
-        //     }
-        //     return 0f;
-        // }
-        // else {
-        //    if (v < ) {
-        //    }    
-        // }
-
+    bool finished(Agent agent) {
+        return agent.transform.position[0] >= Global.X/2 && !finishedRace.Contains(agent);
     }
 
     // // ----------- host code ----------- 
@@ -296,12 +108,4 @@ public class DeathRaceBehaviour : MonoBehaviour
     //     agent.transform.position = pos;
     //     agent.GetComponent<Rigidbody>().velocity = vel;
     // }
-
-
-
-    void FixedUpdate()
-    {
-        
-    }
-
 }

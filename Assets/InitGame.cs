@@ -15,9 +15,14 @@ public class InitGame : MonoBehaviour
     {
        bool? hostDecision = IAmHost();
        if(hostDecision != null) {
-           var game = Instantiate(Game);
-           game.GetComponent<DeathRaceBehaviour>().IAmHost = hostDecision.Value;
-           Destroy(this);
+           if(hostDecision.Value) {
+                var game = Instantiate(Game);
+                game.GetComponent<DeathRaceBehaviour>().IAmHost = hostDecision.Value;
+                Destroy(this);
+           }
+           else {
+
+           }
        }
     }
 

@@ -43,4 +43,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 30e6c87b713ca7c45b0360dfe6b0fca1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Block: {fileID: 2113358549891328052, guid: 3ffed379442b4eb4bb211e21db4fd7b0, type: 3}
+  AgentPrefab: {fileID: 2113358549891328052, guid: 3ffed379442b4eb4bb211e21db4fd7b0,
+    type: 3}
+  FinishLine: {fileID: 7584905551095382014, guid: 5b29f8ba3d5c53440a90b57773a41772,
+    type: 3}
+  IAmHost: 1
