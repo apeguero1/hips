@@ -20,7 +20,7 @@ public class Move : MonoBehaviour
         finishLine.transform.localScale = new Vector3 (1,Global.Y, 1);
         return finishLine;
     }
-
+/*
      Dictionary<int,AgentState> makeCrossHairs(){
         Dictionary<int,GameObject> agentStates = new Dictionary<int,GameObject>();
         
@@ -33,7 +33,7 @@ public class Move : MonoBehaviour
         //finishLine.GetComponent<Rigidbody>().useGravity = false;
         finishLine.transform.localScale = new Vector3 (Global.X,Global.Y, 1);
         return finishLine;
-    }
+    }*/
 
 
 
