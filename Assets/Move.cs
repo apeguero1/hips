@@ -17,6 +17,8 @@ public class Move : MonoBehaviour
     //List<GameObject> npcs = new List<GameObject>();
     //List<Rigidbody> rb_npcs = new List<Rigidbody>();
     List<GameObject> agents = new List<GameObject>();
+    List<GameObject> npcs = new List<GameObject>();
+
 
     List<GameObject> players = new List<GameObject>();
     enum AgentState
@@ -38,11 +40,24 @@ public class Move : MonoBehaviour
 
     // Start is called before the first frame update
     
+    GameObject makeFinishLine(){
+        var finishLine = Instantiate(Block, new Vector3(+Global.X/2,
+                                              -Global.Y/2*0f ,0), 
+                                              Quaternion.identity);
+        finishLine.AddComponent<Rigidbody>();                
+        finishLine.GetComponent<Collider>().enabled = false;
+        finishLine.GetComponent<Rigidbody>().useGravity = false;
+        finishLine.transform.localScale = new Vector3 (1,Global.Y, 1);
+        return finishLine;
+    }
+
     float[,] T = new float[2, 2];
     //int p1 = Random.Range(0,N_npc);
     void Start()
     {
         //print("AgentState.Stationary: " + (int) AgentState.Stationary);
+
+        var finishLine = makeFinishLine();
 
         List<int> playersI = new List<int>();
         for (int n=0; n<N_player; n++){
@@ -53,7 +68,7 @@ public class Move : MonoBehaviour
             playersI.Add(i);
         }
          
-        print("players "+string.Join(", ",playersI));
+        // print("players "+string.Join(", ",playersI));
 
         for (int n=0; n<N_agent; n++)
             {
@@ -79,10 +94,11 @@ public class Move : MonoBehaviour
                 
                 if (playersI.Contains(n) ){
                     players.Add(agent);
-                    }
-                else{
-                    agents.Add(agent);
                 }
+                else{
+                    npcs.Add(agent);
+                }
+                agents.Add(agent);
 
 
 
@@ -151,6 +167,9 @@ public class Move : MonoBehaviour
         return null;
     }
     
+    // Update is called once per frame
+    int currentPlace = 1;
+    List<int> finishedRace = new List<int>();
     Vector3 walkingVelocity = new Vector3(1f,0f,0f);
     Vector3 runningVelocity = new Vector3(1.8f,0f,0f);
     // Update is called once per frame
@@ -158,15 +177,30 @@ public class Move : MonoBehaviour
     {
         var action = getAction();
         processAction(players[0], action);
-        foreach  (GameObject agent in agents) {
+        foreach  (GameObject agent in npcs) {
             var nextState = decideNextState(agent);
             agentStates[agent.GetInstanceID()] = nextState;
             agent.GetComponent<Rigidbody>().velocity = nextState == AgentState.Stationary ? Vector3.zero : walkingVelocity;
         }
+
+        for (int n=0; n<N_agent; n++){
+            var agent = agents[n];
+            var id = agent.GetInstanceID();
+            int winnerCount = 0;
+            if ( agent.transform.position[0] >= Global.X/2 && !finishedRace.Contains(id) ){
+                print("Position: "+currentPlace.ToString()+" "+id.ToString()+" "+n.ToString() );
+                finishedRace.Add(agent.GetInstanceID());
+                winnerCount = winnerCount + 1;
+            }
+            if (winnerCount > 0) {
+                currentPlace += 1;
+            }
+        }
+
     }
 
     void processAction(GameObject player, Action? action) {
-        print("processing action: " + action.ToString());
+        // print("processing action: " + action.ToString());
         var state = agentStates[player.GetInstanceID()];
 
         if (action == null) {
