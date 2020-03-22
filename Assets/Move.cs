@@ -224,6 +224,41 @@ public class Move : MonoBehaviour
     }
 
 
+    // ----------- host code ----------- 
+    // Job 1: Update function as is 
+    // Job 2
+    void listenForClientAction() {
+       (Action? action, int playerId) = receiveAction();
+       processAction(players[playerId], action);
+    }
+
+    // ----------- client code -----------
+    // Job 2
+    void listenForInputFromUser() {
+        var action = getAction();
+        sendActionToHost(action);
+    }
+
+    // Job 1
+    void listenForStateChangeFromHost() {
+        List<(int agentId, Vector3,Vector3)> receivedState = receiveState();
+        clientReceiveState(receivedState);
+    }
+
+    void clientReceiveState(List<(int, Vector3, Vector3)> hostState) {
+       foreach ((int agentId, Vector3 pos, Vector3 vel) agentState in hostState) {
+           updateState(agentState.agentId, agentState.pos, agentState.vel);
+       }
+    }
+
+    void updateState(int agentId, Vector3 pos, Vector3 vel) {
+        var agent = agents[agentId] ;
+        agent.transform.position = pos;
+        agent.GetComponent<Rigidbody>().velocity = vel;
+    }
+
+
+
     AgentState decideNextState(GameObject agent) {
         float v = Random.Range(0f,1f);
         //print("Random Number: " + v.ToString());
