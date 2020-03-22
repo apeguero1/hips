@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Reflection;
 
-public class Move : MonoBehaviour
+public class DeathRaceBehaviour : MonoBehaviour
 {
     // Vector3 random_vel(float a,float b){
     //     return new Vector3(Random.Range(a,b),
@@ -12,6 +12,7 @@ public class Move : MonoBehaviour
 
 
     public GameObject Block;
+    public bool IAmHost;
     float var1;
 
     //List<GameObject> npcs = new List<GameObject>();
@@ -53,10 +54,20 @@ public class Move : MonoBehaviour
 
     float[,] T = new float[2, 2];
     //int p1 = Random.Range(0,N_npc);
-    void Start()
-    {
-        //print("AgentState.Stationary: " + (int) AgentState.Stationary);
 
+    void Start() {
+        if(IAmHost) {
+            hostStart();
+        }
+        else {
+            // clientWaitForFirstState();
+        }
+    }
+
+    void hostStart()
+    {
+
+        //print("AgentState.Stationary: " + (int) AgentState.Stationary);
         var finishLine = makeFinishLine();
 
         List<int> playersI = new List<int>();
@@ -121,7 +132,6 @@ public class Move : MonoBehaviour
         //     //print("vel "+string.Join(", ", npcs[n].GetComponent<Rigidbody>().velocity)); 
         // }
         //print(Util.describe(typeof(npcs[0]) ) );
-
     }
 
 
@@ -129,6 +139,9 @@ public class Move : MonoBehaviour
         Walk,
         Run
     }
+//  float _yRotation = Input.GetAxisRaw("Mouse X");
+//         float _xRotation = Input.GetAxisRaw("Mouse Y");
+//         Vector3 _rotation = new Vector3(0f, _yR
 
     Action? getAction() {
         var deadZone = 0.3f;
@@ -224,41 +237,6 @@ public class Move : MonoBehaviour
     }
 
 
-    // ----------- host code ----------- 
-    // Job 1: Update function as is 
-    // Job 2
-    void listenForClientAction() {
-       (Action? action, int playerId) = receiveAction();
-       processAction(players[playerId], action);
-    }
-
-    // ----------- client code -----------
-    // Job 2
-    void listenForInputFromUser() {
-        var action = getAction();
-        sendActionToHost(action);
-    }
-
-    // Job 1
-    void listenForStateChangeFromHost() {
-        List<(int agentId, Vector3,Vector3)> receivedState = receiveState();
-        clientReceiveState(receivedState);
-    }
-
-    void clientReceiveState(List<(int, Vector3, Vector3)> hostState) {
-       foreach ((int agentId, Vector3 pos, Vector3 vel) agentState in hostState) {
-           updateState(agentState.agentId, agentState.pos, agentState.vel);
-       }
-    }
-
-    void updateState(int agentId, Vector3 pos, Vector3 vel) {
-        var agent = agents[agentId] ;
-        agent.transform.position = pos;
-        agent.GetComponent<Rigidbody>().velocity = vel;
-    }
-
-
-
     AgentState decideNextState(GameObject agent) {
         float v = Random.Range(0f,1f);
         //print("Random Number: " + v.ToString());
@@ -285,6 +263,41 @@ public class Move : MonoBehaviour
         // }
 
     }
+
+    // // ----------- host code ----------- 
+    // // Job 1: Update function as is 
+    // // Job 2
+    // void listenForClientAction() {
+    //    (Action? action, int playerId) = receiveAction();
+    //    processAction(players[playerId], action);
+    // }
+
+    // // ----------- client code -----------
+    // // Job 2
+    // void listenForInputFromUser() {
+    //     var action = getAction();
+    //     sendActionToHost(action);
+    // }
+
+    // // Job 1
+    // void listenForStateChangeFromHost() {
+    //     List<(int agentId, Vector3,Vector3)> receivedState = receiveState();
+    //     clientReceiveState(receivedState);
+    // }
+
+    // void clientReceiveState(List<(int, Vector3, Vector3)> hostState) {
+    //    foreach ((int agentId, Vector3 pos, Vector3 vel) agentState in hostState) {
+    //        updateState(agentState.agentId, agentState.pos, agentState.vel);
+    //    }
+    // }
+
+    // void updateState(int agentId, Vector3 pos, Vector3 vel) {
+    //     var agent = agents[agentId] ;
+    //     agent.transform.position = pos;
+    //     agent.GetComponent<Rigidbody>().velocity = vel;
+    // }
+
+
 
     void FixedUpdate()
     {
