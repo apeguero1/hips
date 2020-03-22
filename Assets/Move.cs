@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Reflection;
@@ -17,6 +17,8 @@ public class Move : MonoBehaviour
     //List<GameObject> npcs = new List<GameObject>();
     //List<Rigidbody> rb_npcs = new List<Rigidbody>();
     List<GameObject> agents = new List<GameObject>();
+
+    List<GameObject> players = new List<GameObject>();
     enum AgentState
     {
         Stationary,
@@ -28,24 +30,42 @@ public class Move : MonoBehaviour
 
     //List<physics> npcs = new List<GameObject>();
 
-    int N_npc = 10;
+    int N_agent = 10;
+    int N_player = 2;
+    
+    
+
     // Start is called before the first frame update
     
     float[,] T = new float[2, 2];
+    //int p1 = Random.Range(0,N_npc);
     void Start()
     {
-        print("AgentState.Stationary: " + (int) AgentState.Stationary);
-        for (int n=0; n<N_npc; n++)
+        //print("AgentState.Stationary: " + (int) AgentState.Stationary);
+
+        List<int> playersI = new List<int>();
+        for (int n=0; n<N_player; n++){
+            var i = Random.Range(0,N_agent);
+            while (playersI.Contains(i)) {
+                i = Random.Range(0,N_agent);
+            }
+            playersI.Add(i);
+        }
+         
+        print("players "+string.Join(", ",playersI));
+
+        for (int n=0; n<N_agent; n++)
             {
-                Random.Range(-10.0f, 10.0f);
+                //Random.Range(-10.0f, 10.0f);
                 /*npcs.Add(Instantiate(Block2, new Vector3(Random.Range(-Global.X/2,Global.X/2),
                                               Random.Range(-Global.Y/2,Global.Y/2),0), 
                                               Quaternion.identity)
                 */
 
                 
+                
                 var agent = Instantiate(Block, new Vector3(-Global.X/2,
-                                              -Global.Y/2 + n*Global.Y/N_npc   ,0), 
+                                              -Global.Y/2 + n*Global.Y/N_agent   ,0), 
                                               Quaternion.identity);
 
                 agent.AddComponent<Rigidbody>();
@@ -54,8 +74,17 @@ public class Move : MonoBehaviour
                 agent.GetComponent<Rigidbody>().useGravity = false;
 
                 agent.transform.localScale = new Vector3 (1, 1, 1)*0.5f;
-                agents.Add(agent);
-                agentStates.Add(agent.GetInstanceID(),AgentState.Stationary);
+                
+                
+                if (playersI.Contains(n) ){
+                    players.Add(agent);
+                    }
+                else{
+                    agents.Add(agent);
+                    agentStates.Add(agent.GetInstanceID(),AgentState.Stationary);
+                }
+
+
 
             }
 
@@ -63,6 +92,9 @@ public class Move : MonoBehaviour
         T[(int)AgentState.Stationary, (int)AgentState.Moving] = 1f - T[(int)AgentState.Stationary, (int)AgentState.Stationary];
         T[(int)AgentState.Moving, (int)AgentState.Stationary] = 0.02f;
         T[(int)AgentState.Moving, (int)AgentState.Moving] = 1f - T[(int)AgentState.Moving, (int)AgentState.Stationary];
+
+
+        
 
         // for (int n=0; n<N_npc; n++){
 
@@ -92,14 +124,14 @@ public class Move : MonoBehaviour
 
     AgentState decideNextState(GameObject agent) {
         float v = Random.Range(0f,1f);
-        print("Random Number: " + v.ToString());
+        //print("Random Number: " + v.ToString());
         var prevState = agentStates[agent.GetInstanceID()];
         if (v < T[(int) prevState, (int)AgentState.Stationary]) {
-            print("Going STATIONARY BABAAYYYY");
+            //print("Going STATIONARY BABAAYYYY");
             return AgentState.Stationary;
         }
         else {
-            print("MOVING");
+            //print("MOVING");
             return AgentState.Moving;
         }
 
