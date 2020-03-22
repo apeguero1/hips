@@ -116,11 +116,15 @@ public class Move : MonoBehaviour
 
     Action? getAction() {
         var deadZone = 0.3f;
-        if (Mathf.Abs(Input.GetAxisRaw("Horizontal")) > deadZone) {
+        if (Input.GetAxisRaw("Horizontal") > deadZone) {
             // print("Walking Action");
             return Action.Walk;
         }
-        else if(Input.GetKeyDown(KeyCode.Joystick1Button3)) {
+        // else if(Input.GetKeyDown(KeyCode.Joystick1Button3)) {
+        //     // print("Running Action");
+        //     return Action.Run; 
+        // }
+        else if(Input.GetButton("Fire1")) {
             // print("Running Action");
             return Action.Run; 
         }
@@ -148,7 +152,7 @@ public class Move : MonoBehaviour
     }
     
     Vector3 walkingVelocity = new Vector3(1f,0f,0f);
-    Vector3 runningVelocity = new Vector3(1.4f,0f,0f);
+    Vector3 runningVelocity = new Vector3(1.8f,0f,0f);
     // Update is called once per frame
     void Update()
     {

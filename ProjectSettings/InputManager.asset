@@ -42,8 +42,8 @@ InputManager:
     descriptiveName: 
     descriptiveNegativeName: 
     negativeButton: 
-    positiveButton: left ctrl
-    altNegativeButton: 
+    positiveButton: joystick button 3
+    altNegativeButton: joystick 1 button 3
     altPositiveButton: mouse 0
     gravity: 1000
     dead: 0.001
@@ -186,15 +186,15 @@ InputManager:
     descriptiveName: 
     descriptiveNegativeName: 
     negativeButton: 
-    positiveButton: joystick button 0
-    altNegativeButton: 
+    positiveButton: joystick button 3
+    altNegativeButton: joystick 1 button 3
     altPositiveButton: 
     gravity: 1000
     dead: 0.001
     sensitivity: 1000
     snap: 0
     invert: 0
-    type: 0
+    type: 2
     axis: 0
     joyNum: 0
   - serializedVersion: 3
