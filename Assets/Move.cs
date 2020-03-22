@@ -5,10 +5,10 @@ using System.Reflection;
 
 public class Move : MonoBehaviour
 {
-    Vector3 random_vel(float a,float b){
-        return new Vector3(Random.Range(a,b),
-            Random.Range(a,b),0);
-    }
+    // Vector3 random_vel(float a,float b){
+    //     return new Vector3(Random.Range(a,b),
+    //         Random.Range(a,b),0);
+    // }
 
 
     public GameObject Block;
@@ -22,7 +22,8 @@ public class Move : MonoBehaviour
     enum AgentState
     {
         Stationary,
-        Moving
+        Walking,
+        Running
     }
 
     //var agentStates = new List<AgentState>();
@@ -74,14 +75,13 @@ public class Move : MonoBehaviour
                 agent.GetComponent<Rigidbody>().useGravity = false;
 
                 agent.transform.localScale = new Vector3 (1, 1, 1)*0.5f;
-                
+                agentStates.Add(agent.GetInstanceID(),AgentState.Stationary);
                 
                 if (playersI.Contains(n) ){
                     players.Add(agent);
                     }
                 else{
                     agents.Add(agent);
-                    agentStates.Add(agent.GetInstanceID(),AgentState.Stationary);
                 }
 
 
@@ -89,9 +89,9 @@ public class Move : MonoBehaviour
             }
 
         T[(int)AgentState.Stationary, (int)AgentState.Stationary] = 0.97f;
-        T[(int)AgentState.Stationary, (int)AgentState.Moving] = 1f - T[(int)AgentState.Stationary, (int)AgentState.Stationary];
-        T[(int)AgentState.Moving, (int)AgentState.Stationary] = 0.02f;
-        T[(int)AgentState.Moving, (int)AgentState.Moving] = 1f - T[(int)AgentState.Moving, (int)AgentState.Stationary];
+        T[(int)AgentState.Stationary, (int)AgentState.Walking] = 1f - T[(int)AgentState.Stationary, (int)AgentState.Stationary];
+        T[(int)AgentState.Walking, (int)AgentState.Stationary] = 0.02f;
+        T[(int)AgentState.Walking, (int)AgentState.Walking] = 1f - T[(int)AgentState.Walking, (int)AgentState.Stationary];
 
 
         
@@ -109,16 +109,80 @@ public class Move : MonoBehaviour
     }
 
 
+    enum Action {
+        Walk,
+        Run
+    }
+
+    Action? getAction() {
+        var deadZone = 0.3f;
+        if (Mathf.Abs(Input.GetAxisRaw("Horizontal")) > deadZone) {
+            // print("Walking Action");
+            return Action.Walk;
+        }
+        else if(Input.GetKeyDown(KeyCode.Joystick1Button3)) {
+            // print("Running Action");
+            return Action.Run; 
+        }
+        // else if(Input.GetButtonDown("Y")) {
+        //     // print("Running Action");
+        //     return Action.Run; 
+        // }
+        // else if(Input.GetButton("Y")) {
+        //     // print("Running Action");
+        //     return Action.Run; 
+        // }
+        // else if(Input.GetKeyDown(KeyCode.Joystick1Button3)) {
+        //     // print("Running Action");
+        //     return Action.Run; 
+        // }
+        // else if(Input.GetKeyDown(KeyCode.JoystickButton3)) {
+        //     // print("Running Action");
+        //     return Action.Run; 
+        // }
+        // else if(Mathf.Abs(Input.GetAxis("joystick 1 button 3")) > deadZone) {
+        //     // print("Running Action");
+        //     return Action.Run; 
+        // }
+        return null;
+    }
+    
     Vector3 walkingVelocity = new Vector3(1f,0f,0f);
+    Vector3 runningVelocity = new Vector3(1.4f,0f,0f);
     // Update is called once per frame
     void Update()
     {
-       foreach  (GameObject agent in agents) {
+        var action = getAction();
+        processAction(players[0], action);
+        foreach  (GameObject agent in agents) {
             var nextState = decideNextState(agent);
             agentStates[agent.GetInstanceID()] = nextState;
             agent.GetComponent<Rigidbody>().velocity = nextState == AgentState.Stationary ? Vector3.zero : walkingVelocity;
-       }
+        }
+    }
 
+    void processAction(GameObject player, Action? action) {
+        print("processing action: " + action.ToString());
+        var state = agentStates[player.GetInstanceID()];
+
+        if (action == null) {
+            agentStates[player.GetInstanceID()] = AgentState.Stationary;
+            if(state != AgentState.Stationary) {
+                player.GetComponent<Rigidbody>().velocity = Vector3.zero;
+            }
+        }
+        else if (action == Action.Walk) {
+            agentStates[player.GetInstanceID()] = AgentState.Walking;
+            if(state != AgentState.Walking) {
+                player.GetComponent<Rigidbody>().velocity = walkingVelocity;
+            }
+        }
+        else if (action == Action.Run) {
+            agentStates[player.GetInstanceID()] = AgentState.Running;
+            if(state != AgentState.Running) {
+                player.GetComponent<Rigidbody>().velocity = runningVelocity;
+            }
+        }
     }
 
 
@@ -132,7 +196,7 @@ public class Move : MonoBehaviour
         }
         else {
             //print("MOVING");
-            return AgentState.Moving;
+            return AgentState.Walking;
         }
 
         // if (state == AgentState.Stationary) {
